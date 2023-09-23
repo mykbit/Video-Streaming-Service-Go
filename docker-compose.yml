@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  broker:
+    build: ./broker
+    environment:
+      - BROKER_PUB_ADDRESS=${BROKER_PUB_IP}:${BROKER_PUB_PORT}
+    networks:
+      public:
+        ipv4_address: ${BROKER_PUB_IP}
+
+  consumer:
+    build: ./consumer
+    environment:
+      - BROKER_PUB_ADDRESS=${BROKER_PUB_IP}:${BROKER_PUB_PORT}
+      - CONSUMER_PUB_ADDRESS=${CONSUMER_PUB_IP}:${BROKER_PUB_PORT}
+    networks:
+      public:
+        ipv4_address: ${CONSUMER_PUB_IP}
+
+networks:
+  public:
+    ipam:
+      config:
+        - subnet: ${PUB_SUBNET}
+          gateway: ${PUB_GATEWAY}
