@@ -1,10 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"net"
 	"os"
+	"strconv"
 	"time"
 )
+
+var sprintf = fmt.Sprintf
+var println = fmt.Println
 
 func main() {
 	consumerAddr := os.Getenv("CONSUMER_PUB_ADDRESS")
@@ -22,24 +27,52 @@ func main() {
 		os.Exit(0)
 	}
 
-	connection, err := net.DialUDP("udp", consumerAddrUDP, brokerAddrUDP)
+	socket, err := net.DialUDP("udp", consumerAddrUDP, brokerAddrUDP)
 	if err != nil {
 		println("Error connecting to broker: ", err.Error())
 		os.Exit(0)
 	}
 
-	defer connection.Close()
+	defer socket.Close()
+
+	err = pingBroker(socket, brokerAddrUDP)
+	for err != nil {
+		println("Error pinging broker: ", err.Error())
+		time.Sleep(5 * time.Second)
+		println("Trying to ping broker again...")
+		err = pingBroker(socket, brokerAddrUDP)
+	}
 
 	for {
-		message := []byte("Hello, broker! This is a message from the consumer.")
-
-		_, err := connection.Write(message)
-		if err != nil {
-			println("Error sending message to broker: ", err.Error())
-			return
-		}
-
-		println(message)
+		handleStream(socket)
 		time.Sleep(5 * time.Second)
 	}
+}
+
+func pingBroker(socket *net.UDPConn, brokerAddrUDP *net.UDPAddr) error {
+	client := socket.LocalAddr().String()
+	clientID, err := strconv.Atoi(client[len(client)-6 : len(client)-5])
+	if err != nil {
+		return err
+	}
+	message := sprintf("Client %d is pinging broker", clientID-2)
+
+	_, err = socket.Write([]byte(message))
+	if err != nil {
+		return err
+	} else {
+		println(message)
+		return nil
+	}
+}
+
+func handleStream(socket *net.UDPConn) {
+	buffer := make([]byte, 1024)
+
+	n, _, err := socket.ReadFromUDP(buffer)
+	if err != nil {
+		println("Error reading from broker: ", err.Error())
+		return
+	}
+	println("Data: ", buffer[:n])
 }
