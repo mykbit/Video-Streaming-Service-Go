@@ -8,34 +8,50 @@ import (
 )
 
 var println = fmt.Println
+var Sprintf = fmt.Sprintf
 
 func main() {
-	brokerAddress := os.Getenv("BROKER_PUB_ADDRESS")
+	brokerAddressPub := os.Getenv("BROKER_PUB_ADDRESS")
+	brokerAddresPrivate := os.Getenv("BROKER_PRIVATE_ADDRESS")
 
-	udpBrokerAddr, err := net.ResolveUDPAddr("udp", brokerAddress)
+	udpBrokerAddrPub, err := net.ResolveUDPAddr("udp", brokerAddressPub)
 	if err != nil {
-		println("Error resolving broker address: ", err.Error())
+		println("Error resolving public broker address: ", err.Error())
 		os.Exit(0)
 	}
 
-	socket, err := net.ListenUDP("udp", udpBrokerAddr)
+	udpBrokerAddrPrivate, err := net.ResolveUDPAddr("udp", brokerAddresPrivate)
 	if err != nil {
-		println("Error broker listening: ", err.Error())
+		println("Error resolving private broker address: ", err.Error())
 		os.Exit(0)
 	}
 
-	println("Socket established")
-	defer socket.Close()
+	socketPublic, err := net.ListenUDP("udp", udpBrokerAddrPub)
+	if err != nil {
+		println("Error broker listening to public port: ", err.Error())
+		os.Exit(0)
+	}
+	println("Public socket established.")
+	defer socketPublic.Close()
 
-	addrClient, err := connectToClient(socket)
+	socketPrivate, err := net.ListenUDP("udp", udpBrokerAddrPrivate)
+	if err != nil {
+		println("Error broker listening to private port: ", err.Error())
+		os.Exit(0)
+	}
+	println("Private socket established.")
+	defer socketPrivate.Close()
+
+	addrClient, err := connectToClient(socketPublic)
 	for err != nil {
 		println("Error connecting to client: ", err.Error())
-		addrClient, err = connectToClient(socket)
+		addrClient, err = connectToClient(socketPublic)
 	}
 
 	for {
-		streamData(socket, addrClient)
-		time.Sleep(5 * time.Second)
+		acceptData(socketPrivate)
+		streamData(socketPublic, addrClient)
+		time.Sleep(6 * time.Second)
 	}
 
 }
@@ -59,5 +75,20 @@ func streamData(socket *net.UDPConn, addrClient *net.UDPAddr) {
 	if err != nil {
 		println("Error sending message to client: ", err.Error())
 	}
-	println("Bytes sent: ", data)
+	time := time.Now().Format(time.ANSIC)
+	s := Sprintf("Sent from broker at %v: %v", time, data)
+	println(s)
+}
+
+func acceptData(socket *net.UDPConn) {
+	buffer := make([]byte, 1024)
+
+	n, _, err := socket.ReadFromUDP(buffer)
+	if err != nil {
+		println("Error reading from client: ", err.Error())
+		return
+	}
+	time := time.Now().Format(time.ANSIC)
+	s := Sprintf("Received from producer at %v: bytes %v", time, n)
+	println(s)
 }

@@ -1,19 +1,34 @@
 version: "3.8"
 
 services:
+  producer:
+    build: ./producer
+    environment:
+      - BROKER_PRIVATE_ADDRESS=${BROKER_PRIVATE_IP}:${BROKER_PRIVATE_PORT}
+    depends_on:
+      - broker
+    networks:
+      private:
+        ipv4_address: ${PRODUCER_PRIVATE_IP}
+
   broker:
     build: ./broker
     environment:
       - BROKER_PUB_ADDRESS=${BROKER_PUB_IP}:${BROKER_PUB_PORT}
+      - BROKER_PRIVATE_ADDRESS=${BROKER_PRIVATE_IP}:${BROKER_PRIVATE_PORT}
     networks:
       public:
         ipv4_address: ${BROKER_PUB_IP}
+      private:
+        ipv4_address: ${BROKER_PRIVATE_IP}
 
   consumer:
     build: ./consumer
     environment:
       - BROKER_PUB_ADDRESS=${BROKER_PUB_IP}:${BROKER_PUB_PORT}
-      - CONSUMER_PUB_ADDRESS=${CONSUMER_PUB_IP}:${BROKER_PUB_PORT}
+    depends_on:
+      - broker
+      - producer
     networks:
       public:
         ipv4_address: ${CONSUMER_PUB_IP}
@@ -24,3 +39,8 @@ networks:
       config:
         - subnet: ${PUB_SUBNET}
           gateway: ${PUB_GATEWAY}
+  private:
+    ipam:
+      config:
+        - subnet: ${PRIVATE_SUBNET}
+          gateway: ${PRIVATE_GATEWAY}
