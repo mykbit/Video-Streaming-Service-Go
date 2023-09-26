@@ -1,4 +1,4 @@
-package header
+package headers
 
 func Encode(event uint8, producerID int32) []byte {
 	buffer := make([]byte, 5)
