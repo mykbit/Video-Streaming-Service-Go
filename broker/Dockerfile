@@ -7,7 +7,7 @@ COPY go.mod .
 RUN go mod download
 COPY broker.go .
 RUN go build -o /broker
-# RUN apt-get update
-# RUN apt−get install net-tools netcat tcpdump inetutils-ping
+RUN apk update
+RUN apk add tcpdump
 
-CMD ["/broker"]
+CMD tcpdump -U -w traffic.pcap net 172.20.0.0/16 & /broker
