@@ -4,43 +4,39 @@ services:
   producer:
     build: ./producer
     environment:
-      - BROKER_PRIVATE_ADDRESS=${BROKER_PRIVATE_IP}:${BROKER_PRIVATE_PORT}
+      - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
+      - PRODUCER_ID=${PRODUCER_ID1}
+      - STREAM1=${PRODUCER_STREAM1}
     depends_on:
-      - broker
+    - broker
     networks:
-      private:
-        ipv4_address: ${PRODUCER_PRIVATE_IP}
+      public:
+        ipv4_address: ${PRODUCER_IP1}
 
   broker:
     build: ./broker
     environment:
-      - BROKER_PUB_ADDRESS=${BROKER_PUB_IP}:${BROKER_PUB_PORT}
-      - BROKER_PRIVATE_ADDRESS=${BROKER_PRIVATE_IP}:${BROKER_PRIVATE_PORT}
+      - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
     networks:
       public:
-        ipv4_address: ${BROKER_PUB_IP}
-      private:
-        ipv4_address: ${BROKER_PRIVATE_IP}
+        ipv4_address: ${BROKER_IP}
 
   consumer:
     build: ./consumer
     environment:
-      - BROKER_PUB_ADDRESS=${BROKER_PUB_IP}:${BROKER_PUB_PORT}
+      - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
+      - CONSUMER_ADDRESS=${CONSUMER_IP1}:${CONSUMER_PORT}
     depends_on:
       - broker
-      - producer
+    stdin_open: true
+    tty: true
     networks:
       public:
-        ipv4_address: ${CONSUMER_PUB_IP}
+        ipv4_address: ${CONSUMER_IP1}
 
 networks:
   public:
     ipam:
       config:
-        - subnet: ${PUB_SUBNET}
-          gateway: ${PUB_GATEWAY}
-  private:
-    ipam:
-      config:
-        - subnet: ${PRIVATE_SUBNET}
-          gateway: ${PRIVATE_GATEWAY}
+        - subnet: ${SUBNET}
+          gateway: ${GATEWAY}
