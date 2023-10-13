@@ -1,18 +1,21 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"net"
 	"os"
 	"strconv"
-	"time"
+	"strings"
+	"sync"
 )
 
-var sprintf = fmt.Sprintf
 var println = fmt.Println
+var wg sync.WaitGroup
 
 func main() {
-	brokerAddr := os.Getenv("BROKER_PUB_ADDRESS")
+	brokerAddr := os.Getenv("BROKER_ADDRESS")
+	clientAddr := os.Getenv("CONSUMER_ADDRESS")
 
 	brokerAddrUDP, err := net.ResolveUDPAddr("udp", brokerAddr)
 	if err != nil {
@@ -20,53 +23,81 @@ func main() {
 		os.Exit(0)
 	}
 
-	socket, err := net.DialUDP("udp", nil, brokerAddrUDP)
+	clientAddrUDP, err := net.ResolveUDPAddr("udp", clientAddr)
+	if err != nil {
+		println("Error resolving client address: ", err.Error())
+		os.Exit(0)
+	}
+
+	socket, err := net.DialUDP("udp", clientAddrUDP, brokerAddrUDP)
 	if err != nil {
 		println("Error connecting to broker: ", err.Error())
 		os.Exit(0)
 	}
-
 	defer socket.Close()
 
-	err = pingBroker(socket, brokerAddrUDP)
-	for err != nil {
-		println("Error pinging broker: ", err.Error())
-		time.Sleep(5 * time.Second)
-		println("Trying to ping broker again...")
-		err = pingBroker(socket, brokerAddrUDP)
-	}
+	wg.Add(1)
+	go userAction(socket)
+	wg.Wait()
+}
 
+func userAction(socket *net.UDPConn) {
+	defer wg.Done()
+	scanner := bufio.NewScanner(os.Stdin)
 	for {
-		receiveData(socket)
-		time.Sleep(5 * time.Second)
+		fmt.Print("Enter action: ")
+		if !scanner.Scan() {
+			println("Error reading input")
+			continue
+		}
+		action := scanner.Text()
+
+		if len(action) == 0 {
+			continue
+		}
+
+		var event int8
+		var fullProdID int32
+
+		switch {
+		case len(action) > 10 && strings.HasPrefix(action, "subscribe"):
+			event = 1
+			fullProdID = parseProducerID(action[10:])
+			println("Success!")
+		case len(action) > 12 && strings.HasPrefix(action, "unsubscribe"):
+			event = 2
+			fullProdID = parseProducerID(action[12:])
+			println("Success!")
+		default:
+			println("Invalid command. Try again.")
+			continue
+		}
+		if fullProdID == 0 {
+			continue
+		}
+		buffer := encode(event, fullProdID, make([]byte, 65000))
+		_, err := socket.Write(buffer)
+		if err != nil {
+			println("Error sending message to broker: ", err.Error())
+		}
 	}
 }
 
-func pingBroker(socket *net.UDPConn, brokerAddrUDP *net.UDPAddr) error {
-	client := socket.LocalAddr().String()
-	clientID, err := strconv.Atoi(client[len(client)-7 : len(client)-6])
+func parseProducerID(input string) int32 {
+	fullProdID, err := strconv.ParseInt(input, 16, 32)
 	if err != nil {
-		return err
+		println("Error parsing producer ID: ", err.Error())
+		return 0
 	}
-	message := sprintf("Client %d is pinging broker", clientID-3)
-
-	_, err = socket.Write([]byte(message))
-	if err != nil {
-		return err
-	} else {
-		println(message)
-		return nil
-	}
+	return int32(fullProdID)
 }
 
-func receiveData(socket *net.UDPConn) {
-	buffer := make([]byte, 1024)
+func encode(event int8, fullProdID int32, buffer []byte) []byte {
+	buffer[0] = byte(event)
+	buffer[1] = byte(fullProdID >> 24)
+	buffer[2] = byte(fullProdID >> 16)
+	buffer[3] = byte(fullProdID >> 8)
+	buffer[4] = byte(fullProdID)
 
-	n, _, err := socket.ReadFromUDP(buffer)
-	if err != nil {
-		println("Error reading from broker: ", err.Error())
-		return
-	}
-	time := time.Now().Format(time.ANSIC)
-	println("Consumer received at ", time, ": ", string(buffer[:n]))
+	return buffer
 }
