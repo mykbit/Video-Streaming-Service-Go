@@ -1,17 +1,44 @@
 version: "3.8"
 
 services:
-  producer:
+  producer-1:
     build: ./producer
     environment:
       - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
       - PRODUCER_ID=${PRODUCER_ID1}
-      - STREAM1=${PRODUCER_STREAM1}
+      - STREAM=${PRODUCER_STREAM1}
+      - DELAY=${DELAY1}
     depends_on:
     - broker
     networks:
       public:
         ipv4_address: ${PRODUCER_IP1}
+
+  producer-2:
+    build: ./producer
+    environment:
+      - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
+      - PRODUCER_ID=${PRODUCER_ID2}
+      - STREAM=${PRODUCER_STREAM2}
+      - DELAY=${DELAY2}
+    depends_on:
+    - broker
+    networks:
+      public:
+        ipv4_address: ${PRODUCER_IP2}
+
+  producer-3:
+    build: ./producer
+    environment:
+      - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
+      - PRODUCER_ID=${PRODUCER_ID3}
+      - STREAM=${PRODUCER_STREAM3}
+      - DELAY=${DELAY3}
+    depends_on:
+    - broker
+    networks:
+      public:
+        ipv4_address: ${PRODUCER_IP3}
 
   broker:
     build: ./broker
@@ -21,7 +48,7 @@ services:
       public:
         ipv4_address: ${BROKER_IP}
 
-  consumer:
+  consumer-1:
     build: ./consumer
     environment:
       - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
@@ -33,6 +60,32 @@ services:
     networks:
       public:
         ipv4_address: ${CONSUMER_IP1}
+
+  consumer-2:
+    build: ./consumer
+    environment:
+      - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
+      - CONSUMER_ADDRESS=${CONSUMER_IP2}:${CONSUMER_PORT}
+    depends_on:
+      - broker
+    stdin_open: true
+    tty: true
+    networks:
+      public:
+        ipv4_address: ${CONSUMER_IP2}
+
+  consumer-3:
+    build: ./consumer
+    environment:
+      - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
+      - CONSUMER_ADDRESS=${CONSUMER_IP3}:${CONSUMER_PORT}
+    depends_on:
+      - broker
+    stdin_open: true
+    tty: true
+    networks:
+      public:
+        ipv4_address: ${CONSUMER_IP3}
 
 networks:
   public:
