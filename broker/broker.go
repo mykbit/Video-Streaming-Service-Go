@@ -39,6 +39,7 @@ func (sm *SubscriberManager) RemoveSubscriber(producerID int32, sub *net.UDPAddr
 	for i, addr := range sm.streams[producerID] {
 		if addr.IP.Equal(sub.IP) && addr.Port == sub.Port {
 			sm.streams[producerID] = append(sm.streams[producerID][:i], sm.streams[producerID][i+1:]...)
+			printf("Removed subscriber from producer 0x%X\n", producerID)
 		}
 	}
 }
