@@ -6,7 +6,8 @@ services:
     environment:
       - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
       - PRODUCER_ID=${PRODUCER_ID1}
-      - STREAM=${PRODUCER_STREAM1}
+      - FRAMES=${PRODUCER_FRAMES1}
+      - AUDIO=${PRODUCER_AUDIO1}
       - DELAY=${DELAY1}
     depends_on:
     - broker
@@ -19,7 +20,8 @@ services:
     environment:
       - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
       - PRODUCER_ID=${PRODUCER_ID2}
-      - STREAM=${PRODUCER_STREAM2}
+      - FRAMES=${PRODUCER_FRAMES2}
+      - AUDIO=${PRODUCER_AUDIO2}
       - DELAY=${DELAY2}
     depends_on:
     - broker
@@ -32,7 +34,8 @@ services:
     environment:
       - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
       - PRODUCER_ID=${PRODUCER_ID3}
-      - STREAM=${PRODUCER_STREAM3}
+      - FRAMES=${PRODUCER_FRAMES3}
+      - AUDIO=${PRODUCER_AUDIO3}
       - DELAY=${DELAY3}
     depends_on:
     - broker
