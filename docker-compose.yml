@@ -9,6 +9,7 @@ services:
       - FRAMES=${PRODUCER_FRAMES1}
       - AUDIO=${PRODUCER_AUDIO1}
       - DELAY=${DELAY1}
+      - RATE=${RATE1}
     depends_on:
     - broker
     networks:
@@ -23,6 +24,7 @@ services:
       - FRAMES=${PRODUCER_FRAMES2}
       - AUDIO=${PRODUCER_AUDIO2}
       - DELAY=${DELAY2}
+      - RATE=${RATE2}
     depends_on:
     - broker
     networks:
@@ -37,6 +39,7 @@ services:
       - FRAMES=${PRODUCER_FRAMES3}
       - AUDIO=${PRODUCER_AUDIO3}
       - DELAY=${DELAY3}
+      - RATE=${RATE3}
     depends_on:
     - broker
     networks:

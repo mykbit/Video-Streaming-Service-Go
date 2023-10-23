@@ -47,20 +47,22 @@ func main() {
 	}
 
 	audioDirPath := os.Getenv("AUDIO")
+	rate, err := strconv.Atoi(os.Getenv("RATE"))
+	if err != nil {
+		println("Error parsing rate: ", err.Error())
+		os.Exit(0)
+	}
 
 	wg.Add(1)
-	go sendData(socket, prodID, 1, entriesFrames, framesDirPath, audioDirPath)
+	go sendData(socket, prodID, 1, entriesFrames, framesDirPath, audioDirPath, rate)
 	wg.Wait()
 }
 
-func sendData(socket *net.UDPConn, prodID int32, streamID int8, stream []os.DirEntry, framesDirPath string, audioDirPath string) {
+func sendData(socket *net.UDPConn, prodID int32, streamID int8, stream []os.DirEntry, framesDirPath string, audioDirPath string, rate int) {
 	defer wg.Done()
-	rate := 12
 	idx := 1
 	for i := 1; i <= len(stream); i++ {
 		frame, err := os.ReadFile(framesDirPath + "/frame" + strconv.Itoa(i) + ".jpg")
-		//println(len(frame))
-		//println(dirPath + "/frame" + strconv.Itoa(i) + ".jpg")
 		if err != nil {
 			println("Error reading frame: ", err.Error())
 		}
