@@ -75,7 +75,7 @@ func userAction(socket *net.UDPConn) {
 		if fullProdID == 0 {
 			continue
 		}
-		buffer := encode(event, fullProdID, make([]byte, 65000))
+		buffer := encode(event, fullProdID, make([]byte, 5))
 		_, err := socket.Write(buffer)
 		if err != nil {
 			println("Error sending message to broker: ", err.Error())
