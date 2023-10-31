@@ -79,7 +79,11 @@ func sendData(socket *net.UDPConn, prodID int32, streamID int8, stream []os.DirE
 		if rate <= 1 {
 			go sendAudio(socket, prodID, streamID, audioDirPath, idx)
 			idx++
-			rate = 12
+			rate, err = strconv.Atoi(os.Getenv("RATE"))
+			if err != nil {
+				println("Error parsing rate: ", err.Error())
+				os.Exit(0)
+			}
 		} else {
 			rate--
 		}
