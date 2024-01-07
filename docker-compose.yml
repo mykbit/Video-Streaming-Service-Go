@@ -3,6 +3,7 @@ version: "3.8"
 services:
   producer-1:
     build: ./producer
+    container_name: producer-1
     environment:
       - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
       - PRODUCER_ID=${PRODUCER_ID1}
@@ -18,6 +19,7 @@ services:
 
   producer-2:
     build: ./producer
+    container_name: producer-2
     environment:
       - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
       - PRODUCER_ID=${PRODUCER_ID2}
@@ -33,6 +35,7 @@ services:
 
   producer-3:
     build: ./producer
+    container_name: producer-3
     environment:
       - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
       - PRODUCER_ID=${PRODUCER_ID3}
@@ -48,6 +51,7 @@ services:
 
   broker:
     build: ./broker
+    container_name: broker
     environment:
       - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
     networks:
@@ -56,6 +60,7 @@ services:
 
   consumer-1:
     build: ./consumer
+    container_name: consumer-1
     environment:
       - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
       - CONSUMER_ADDRESS=${CONSUMER_IP1}:${CONSUMER_PORT}
@@ -69,6 +74,7 @@ services:
 
   consumer-2:
     build: ./consumer
+    container_name: consumer-2
     environment:
       - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
       - CONSUMER_ADDRESS=${CONSUMER_IP2}:${CONSUMER_PORT}
@@ -82,6 +88,7 @@ services:
 
   consumer-3:
     build: ./consumer
+    container_name: consumer-3
     environment:
       - BROKER_ADDRESS=${BROKER_IP}:${BROKER_PORT}
       - CONSUMER_ADDRESS=${CONSUMER_IP3}:${CONSUMER_PORT}

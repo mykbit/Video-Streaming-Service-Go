@@ -60,7 +60,7 @@ func main() {
 
 func sendData(socket *net.UDPConn, prodID int32, streamID int8, stream []os.DirEntry, framesDirPath string, audioDirPath string, rate int) {
 	defer wg.Done()
-	idx := 1
+
 	for i := 1; i <= len(stream); i++ {
 		frame, err := os.ReadFile(framesDirPath + "/frame" + strconv.Itoa(i) + ".jpg")
 		if err != nil {
@@ -76,18 +76,12 @@ func sendData(socket *net.UDPConn, prodID int32, streamID int8, stream []os.DirE
 		if err != nil {
 			fmt.Println("Error sending frames to broker: ", err.Error())
 		}
-		if rate <= 1 {
-			go sendAudio(socket, prodID, streamID, audioDirPath, idx)
-			idx++
-			rate, err = strconv.Atoi(os.Getenv("RATE"))
-			if err != nil {
-				println("Error parsing rate: ", err.Error())
-				os.Exit(0)
-			}
-		} else {
-			rate--
+
+		if i%rate == 0 {
+			go sendAudio(socket, prodID, streamID, audioDirPath, i/rate)
 		}
-		time.Sleep(83 * time.Millisecond)
+
+		time.Sleep(time.Duration(1000/rate) * time.Millisecond)
 	}
 }
 

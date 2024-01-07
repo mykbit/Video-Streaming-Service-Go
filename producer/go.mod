@@ -1,3 +1,3 @@
-module github.com/mykbit/frame-streaming-service/producer
+module github.com/mykbit/video-streaming-service/producer
 
 go 1.21.1

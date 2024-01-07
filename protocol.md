@@ -6,7 +6,7 @@
      - `0x01` - subscribe
      - `0x02` - unsubscribe
 
-2. **Producer & Stream identifier**
+2. **Producer & Stream Identifier**
    - Offset: 1 byte
    - Length: 4 bytes
    - Byte 1-3: Producer ID
