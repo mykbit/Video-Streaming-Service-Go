@@ -28,7 +28,6 @@ Requirements:
 1. Clone the repository: `git clone https://github.com/mykbit/Video-Streaming-Service-Go.git`
 2. Navigate to the project directory: `cd path/to/Video-Streaming-Service-Go`
 3. Build the project: `docker compose up --build`
-4. Obtain manual control over the clients: `docker attach <client_container_name>`
 
 ## Running and Interacting
 Once you have successfully built the project, you can start interacting with the entities by taking control over clients. The following are the commands you should use in order to obtain the control:
